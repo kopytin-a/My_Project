@@ -1,126 +1,156 @@
 <template>
-    <div class="app">
-        <button class="btn custom-btn exit" @click="exit">Выход</button>
-        <input class="input" v-model="searchQuery" placeholder="Поиск (не менее 3х символов)..."/>
-        <div v-if="sortedAndSearchedPosts.length > 0">
-            <div v-if="searchQuery.length > 0">
-                <accordion-menu v-if="searchQuery.length > 2" :users="sortedAndSearchedPosts"/>
-                <h5 class="h" v-else>Не менее 3х символов!</h5>
-            </div>
-            <div v-else>
-                <accordion-menu :users="sortedAndSearchedPosts"/>
-            </div>
-        </div>
-        <h2 class="h" v-else>Пользователь не найден!</h2>
-        <div class="page-wrapper">
-           <paginate
-                v-model="page"
-                :page-count="totalPages"
-                @click="changePage(page)"
-                :prev-text="'Назад'"
-                :next-text="'Вперед'"
-            />
-        </div>
-        <div>
-            <button class="btn custom-btn btn-5" @click="showPopup">Новый пользователь</button>
-            <popup v-model:show="popupVisible" @create="createUsers"></popup>
-        </div>
+  <div class="app">
+    <button 
+      class="btn custom-btn exit" 
+      @click="exit"
+      >
+      Выход
+    </button>
+
+    <input 
+      class="input" 
+      v-model="searchQuery" 
+      placeholder="Поиск (не менее 3х символов)..."
+    />
+
+    <div v-if="sortedAndSearchedPosts.length > 0">
+      
+      <div v-if="searchQuery.length > 0">
+        <accordion-menu 
+          v-if="searchQuery.length > 2" 
+          :users="sortedAndSearchedPosts"
+        />
+        <h5 class="h" v-else> Не менее 3х символов! </h5>
+      </div>
+
+      <div v-else>
+        <accordion-menu :users="sortedAndSearchedPosts" />
+      </div>
     </div>
+
+    <h2 v-else class="h"> Пользователь не найден! </h2>
+        
+    <div class="page-wrapper">
+      <paginate
+        v-model="page"
+        :page-count="totalPages"
+        @click="changePage(page)"
+        :prev-text="'Назад'"
+        :next-text="'Вперед'"
+      />
+    </div>
+
+    <div>
+      <button 
+        class="btn custom-btn btn-5" 
+        @click="showPopup"
+      >
+         Новый пользователь
+      </button>
+
+      <popup-new-user 
+        v-model:show="popupVisible" 
+        @create="createUsers"
+      />
+    </div>
+  </div>
 </template>
 
 <script>
 import AccordionMenu from '@/components/AccordionMenu'
-import Popup from '@/components/Popup'
+import PopupNewUser from '@/components/PopupNewUser'
 import Paginate from 'vuejs-paginate-next'
 import axios from 'axios'
 export default {
-    components: {
-        AccordionMenu,
-        Paginate,
-        Popup,
-    },
-    data() {
-        return {
-            users: [],
-            searchQuery: '',
-            page: 1,
-            limit: 6,
-            totalPages: 0,
-            phoneList: [ 
-                88505553535, 89046398745, 89541239867, 89006834572, 
-                89647589687, 89314568789, 88457569248, 83645984231,
-                89002015869, 81061234782, 89116580234, 89120000456
-                ],
-            popupVisible: false,
-        }
-    },
-    methods: {
-        changePage(page) {
-            this.page = page
-            this.fetchUser()
-        },
-        showPopup() {
-            this.popupVisible = true
-        },
-        createUsers(user) {
-            axios.post('https://reqres.in/api/users', user)
-                .then(response => {
-                    // this.users.unshift(response.data) тестирование!!!
-                    console.log(response)
-                })
-                .catch(error => {
-                    alert(error)
-                })
-        },
-        async fetchUser() {
-            try {
-                const result = await axios.get('https://reqres.in/api/users',{
-                    params: {
-                        page: this.page,
-                        per_page: this.limit,
-                    }
-                })
-                this.totalPages = result.data.total_pages
-                this.users = result.data.data
-                this.users.forEach(item => {
-                    item.phone = this.phoneList[item.id - 1]
-                })
-            } catch (e) {
-                alert('Ошибка')
-            }
-        },
-        exit() {
-            this.$router.push('/')
-        }
-    },
-    mounted() {
-        this.fetchUser()
-    },
-    computed: {
-        sortedAndSearchedPosts() {
-            return this.users.filter(user => (user.first_name + ' ' + user.last_name).toLowerCase().includes(this.searchQuery.toLowerCase()))
-        }
+  components: {
+    AccordionMenu,
+    Paginate,
+    PopupNewUser
+  },
+  data() {
+    return {
+      users: [],
+      searchQuery: '',
+      page: 1,
+      limit: 6,
+      totalPages: 0,
+      phoneList: [ 
+        88505553535, 89046398745, 89541239867, 89006834572, 
+        89647589687, 89314568789, 88457569248, 83645984231,
+        89002015869, 81061234782, 89116580234, 89120000456
+      ],
+      popupVisible: false,
     }
+  },
+  methods: {
+    exit() {
+      this.$router.push('/')
+    },
+    changePage(page) {
+      this.page = page
+      this.fetchUser()
+    },
+    showPopup() {
+      this.popupVisible = true
+    },
+    async fetchUser() {
+      try {
+        const result = await axios.get('https://reqres.in/api/users',{
+          params: {
+            page: this.page,
+            per_page: this.limit,
+          }
+        })
+
+        this.totalPages = result.data.total_pages
+        this.users = result.data.data
+
+        this.users.forEach(item => {
+          item.phone = this.phoneList[item.id - 1]
+        })
+        
+      } catch (e) {
+        alert('Ошибка')
+      }
+    },
+    createUsers(user) {
+      axios.post('https://reqres.in/api/users', user)
+        .then(response => {
+          console.log(response)
+      })
+        .catch(error => {
+          alert(error)
+      })
+    }
+  },
+  mounted() {
+    this.fetchUser()
+  },
+  computed: {
+    sortedAndSearchedPosts() {
+      return this.users.filter(user => (user.first_name + ' ' + user.last_name).toLowerCase().includes(this.searchQuery.toLowerCase()))
+    }
+  }
 }
 </script>
 
 <style scoped>
- @import "https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css";
+@import "https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css";
 .app {
-    padding: 20px;
+  padding: 20px;
 }
 .h {
-    padding: 10px;
+  padding: 10px;
 }
 .input {
-    width: 100%;
-    border: 1px solid black;
-    padding: 10px 15px ;
-    margin-top: 15px;
+  width: 100%;
+  border: 1px solid black;
+  padding: 10px 15px ;
+  margin-top: 15px;
 }
 .page-wrapper {
-    display: flex;
-    margin-top: 15px;
+  display: flex;
+  margin-top: 15px;
 }
 .custom-btn {
   width: 130px;

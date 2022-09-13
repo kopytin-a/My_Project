@@ -1,17 +1,13 @@
 <template>
-    <router-view></router-view>
-    <home></home>
+  <router-view></router-view>
+  <home-page></home-page>
 </template>
 
 <script>
-import Home from '@/components/Home'
+import HomePage from "@/components/HomePage";
 export default {
-components: {
-    Home
-}
+  components: {
+    HomePage
+  }
 }
 </script>
-
-<style scoped>
-
-</style>
